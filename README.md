@@ -91,11 +91,12 @@ release/ 产物用 NXP **mfgtools**（Windows 烧写工具）烧写到 eMMC：
 
 ## 许可证
 
-**CC BY-NC 4.0**（署名-非商业性使用 4.0 国际）— 详见 [LICENSE](LICENSE)。
+**GPL-3.0** — 详见 [LICENSE](LICENSE)。
 
 - 作者：**DuanMengJ**
-- 允许：非商业性使用、修改、分享（须署名）
-- 禁止：商业用途（含整机量产、有偿方案交付）
+- 本仓库**原创部分**（`app/`、`qt6/` 构建脚本、Makefile、文档）以 GPL-3.0 授权
+- **上游组件**（`kernel/`、`buildroot/`、`uboot/`）保留各自上游协议（GPL-2.0 等），
+  版权归原作者所有 — 见下方[上游致谢](#上游致谢)
 
 ### 上游致谢
 
