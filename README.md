@@ -107,5 +107,5 @@ release/ 产物用 NXP **mfgtools**（Windows 烧写工具）烧写到 eMMC：
 - [野火 ebf_linux_uboot](https://gitee.com/Embedfire/ebf_linux_uboot)（U-Boot）
 - [Qt 6.7](https://www.qt.io/)（LGPL 组件，本仓库以二进制形式使用）
 - wqy-zenhei 文泉驿正黑字体（GPL/APL 双许可）
-- `app/resources/images/car/` 中的仪表图片素材（背景、指针、警示灯图标等）
+- `app/resources/images/car/` 中的部分仪表图片素材（背景、警示灯图标等）
   修改自野火 i.MX6ULL 官方素材库，版权归野火电子所有
