@@ -1,6 +1,7 @@
 # 构建产物
 buildroot/output/
 buildroot/dl/
+build/
 buildroot/.config
 buildroot/.config.old
 kernel/arch/arm/boot/zImage
