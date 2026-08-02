@@ -1,0 +1,25 @@
+#!/bin/sh
+#
+# S99carmeter - 启动 Qt carmeter 应用 + 极致描画优化 env vars
+# D1: Qt6 库在 /usr/lib (ld.so 默认搜索, 无需 LD_LIBRARY_PATH)
+# QML 缓存: ahead-of-time qmlcache 已编译进二进制 (无需运行时磁盘缓存)
+#
+export LC_ALL=C.UTF-8
+export LANG=C.UTF-8
+
+# 极致描画优化 (单核 Cortex-A7 software backend)
+export QSG_RENDER_LOOP=basic                  # 单核 CPU 选 basic loop (避免 threaded 上下文切换)
+export QT_QPA_FB_NO_SCREENSAVER=1             # 禁关屏
+export QT_QPA_FB_NO_SLEEP_GAP=1               # 渲染无 sleep gap
+export QT_LOGGING_RULES="qt.qpa.*=false"     # 减日志 I/O
+export QSG_INFO=0                             # 关 QSG 调试
+export QSG_RHI_BACKEND=null                   # 无 RHI (无 GPU)
+export QT_PLUGIN_PATH=/usr/lib/qt6/plugins    # Qt6 plugin 路径 (QLibraryInfo 未生效, 显式指定)
+export QML_IMPORT_PATH=/usr/lib/qt6/qml       # Qt6 QML 导入路径 (同上, 显式指定)
+
+cd /
+echo "[S99carmeter] LC_ALL=$LC_ALL LANG=$LANG QT_PLUGIN_PATH=$QT_PLUGIN_PATH QML_IMPORT_PATH=$QML_IMPORT_PATH"
+
+# 后台启动 carmeter (不阻塞 rcS, 让 init 跑 getty 提示登录)
+# carmeter log 重定向到 /tmp/carmeter.log (不污染串口 shell)
+/usr/bin/carmeter >/tmp/carmeter.log 2>&1 &

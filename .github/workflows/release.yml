@@ -1,0 +1,102 @@
+# release.yml — tag v* 触发的验证性构建
+#
+# 作用: 在干净的 Ubuntu 上验证本仓库可复现构建 (Qt6 + carmeter + kernel + uboot),
+#       产物上传为 GitHub Actions artifact.
+# 注意: 本 CI 不做 buildroot 全量 rootfs 构建 (数小时, 依赖本地 fakeroot 补丁),
+#       完整 release/ 镜像 (rootfs.ext4) 需本地 `make release` 生成.
+#
+# 缓存:
+#   - /opt/qt6-carmeter + /opt/qt6-carmeter-host: Qt6 编译产物 (key 含 Qt6 源码 hash)
+#   - ~/qt6-cache/qt-everywhere-src-6.7.3: Qt6 源码 (git-lfs 之外的大文件, 避免反复下载)
+
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      QT6_PREFIX: /opt/qt6-carmeter
+      QT_HOST: /opt/qt6-carmeter-host
+      CARMETER_STAGING: ${{ github.workspace }}/staging
+      QT_SRC: ${{ github.workspace }}/qt6-src/qt-everywhere-src-6.7.3
+      QT_BUILD: ${{ github.workspace }}/qt6-build
+      CARMETER_BUILD: ${{ github.workspace }}/carmeter-build
+      JOBS: 4
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 安装交叉工具链与依赖
+        run: |
+          sudo apt-get update
+          sudo dpkg --add-architecture armhf
+          sudo apt-get update
+          sudo apt-get install -y \
+            gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
+            libc6-armhf-cross libc6-dev-armhf-cross \
+            libstdc++-*-dev-armhf-cross \
+            ninja-build cmake pkg-config bc u-boot-tools \
+            libgpiod-dev:armhf \
+            libssl-dev flex bison
+          arm-linux-gnueabihf-g++ -dumpversion
+
+      - name: 恢复 Qt6 源码缓存
+        id: qt-src-cache
+        uses: actions/cache@v4
+        with:
+          path: qt6-src
+          key: qt6-src-6.7.3
+
+      - name: 下载 Qt6 源码
+        if: steps.qt-src-cache.outputs.cache-hit != 'true'
+        run: |
+          mkdir -p qt6-src
+          curl -fsSL -o /tmp/qt.tar.xz \
+            https://download.qt.io/archive/qt/6.7/6.7.3/submodules/qt-everywhere-src-6.7.3.tar.xz
+          tar xJf /tmp/qt.tar.xz -C qt6-src
+          rm /tmp/qt.tar.xz
+
+      - name: 恢复 Qt6 编译产物缓存
+        id: qt6-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            /opt/qt6-carmeter
+            /opt/qt6-carmeter-host
+          key: qt6-${{ hashFiles('qt6/build-qt6.sh', 'qt6/qt6-toolchain.cmake') }}-6.7.3
+
+      - name: 编译 Qt6 (首次约 2h, 缓存命中则跳过)
+        if: steps.qt6-cache.outputs.cache-hit != 'true'
+        run: ./qt6/build-qt6.sh
+
+      - name: 编译 carmeter
+        run: ./qt6/build-carmeter.sh
+
+      - name: 编译 kernel (zImage + dtb)
+        run: |
+          make -C kernel ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4 zImage dtbs
+
+      - name: 编译 uboot
+        run: |
+          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig
+          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
+
+      - name: 收集产物
+        run: |
+          mkdir -p artifacts
+          cp kernel/arch/arm/boot/zImage artifacts/
+          cp kernel/arch/arm/boot/dts/imx6ull-carmeter-pro.dtb artifacts/
+          cp uboot/u-boot.imx artifacts/u-boot-mmc.imx
+          cp staging/usr/bin/carmeter artifacts/
+          file artifacts/*
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: imx6ull-carmeter-${{ github.ref_name }}
+          path: artifacts/
+          if-no-files-found: error

@@ -1,0 +1,20 @@
+# config.mk.example — 复制为 config.mk 并按本机环境修改 (config.mk 被 .gitignore 排除, 不进 git)
+# 用法: cp config.mk.example config.mk && vim config.mk
+
+# Qt6 交叉编译产物前缀 (本地编译 Qt6 到该目录)
+QT6_PREFIX ?= /opt/qt6-carmeter
+
+# carmeter staging 根目录 (post-build.sh 注入 rootfs 的中间目录, 内部按 $CARMETER_STAGING/usr/... 访问)
+CARMETER_STAGING ?= $(HOME)/qt6-cache/carmeter-staging
+
+# 交叉工具链前缀 (Ubuntu: sudo apt install gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf libc6-armhf-cross libc6-dev-armhf-cross)
+CROSS_COMPILE ?= arm-linux-gnueabihf-
+
+# 源码目录 (默认仓库内子目录)
+KERNEL_DIR ?= kernel
+UBOOT_DIR ?= uboot
+BUILDROOT_DIR ?= buildroot
+APP_DIR ?= app
+
+# kernel 源码树 .config 生成方式 (defconfig 或现有 .config)
+# KERNEL_DEFCONFIG ?= imx6ull_carmeter_defconfig

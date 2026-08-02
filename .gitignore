@@ -1,0 +1,42 @@
+# 构建产物
+buildroot/output/
+buildroot/dl/
+buildroot/.config
+buildroot/.config.old
+kernel/arch/arm/boot/zImage
+kernel/arch/arm/boot/Image
+kernel/arch/arm/boot/dts/*.dtb
+kernel/vmlinux*
+kernel/System.map
+kernel/Module.symvers
+kernel/*.o
+kernel/**/*.o
+kernel/**/*.cmd
+kernel/**/*.ko
+kernel/**/*.a
+uboot/u-boot
+uboot/u-boot.bin
+uboot/u-boot.imx
+uboot/u-boot.map
+uboot/*.o
+uboot/**/*.o
+uboot/**/*.cmd
+uboot/**/*.a
+app/build/
+app/.cache/
+release/
+
+# 本地配置 (用户环境, 不进 git)
+config.mk
+
+# 注意: kernel/.config 和 uboot/.config 被内核/u-boot 自带 .gitignore 的 ".*" 规则
+# 排除, 但它们是本项目的真实构建配置 (别人 clone 后可直接 make), 用
+#   git add -f kernel/.config uboot/.config
+# 强制追踪, 后续改动正常跟踪 (gitignore 只影响未追踪文件).
+
+# 编辑器 / 系统
+.vscode/
+.idea/
+.qtcreator/
+*.swp
+*~

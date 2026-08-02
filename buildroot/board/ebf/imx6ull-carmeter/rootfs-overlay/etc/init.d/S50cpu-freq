@@ -1,0 +1,10 @@
+#!/bin/sh
+#
+# S50cpu-freq — 启动时锁 CPU 频率到 792MHz (i.MX6ULL 最高安全 opp point)
+# 4.19 npi_v7 默认 governor=ondemand → 528MHz; governor=performance → 792MHz
+#
+DEVID=/sys/devices/system/cpu/cpu0/cpufreq
+if [ -d "$DEVID" ]; then
+    echo performance > "$DEVID/scaling_governor" 2>/dev/null
+    echo 792000 > "$DEVID/scaling_setspeed" 2>/dev/null
+fi

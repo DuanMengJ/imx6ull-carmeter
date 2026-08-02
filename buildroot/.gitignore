@@ -1,0 +1,9 @@
+# buildroot 仓库内不跟踪产物
+output/
+dl/
+.stamp_*
+*.o
+*.so
+*.a
+*.swp
+*.bak

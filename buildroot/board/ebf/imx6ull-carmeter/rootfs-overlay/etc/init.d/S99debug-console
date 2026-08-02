@@ -1,0 +1,9 @@
+#!/bin/sh
+#
+# S99debug-console — 串口救命稻草
+# 上次 N5 崩溃后串口无响应: 加这个启动 getty on ttymxc0
+# 即使 carmeter 占用 LCD, 串口仍可 login 调试
+#
+if [ -c /dev/ttymxc0 ]; then
+    /sbin/getty -L 115200 ttymxc0 vt100 &
+fi

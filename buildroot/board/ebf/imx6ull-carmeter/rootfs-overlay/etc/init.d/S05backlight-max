@@ -1,0 +1,7 @@
+#!/bin/sh
+#
+# S05backlight-max — 启动时把背光设为最大亮度 (level 7)
+# DTS backlight 节点默认 brightness-levels = <0 4 8 16 32 64 128 255>
+# 用户/用户决策: 保留 M1 阶段脚本, 启动时背光拉满
+#
+echo 7 > /sys/class/backlight/backlight/brightness 2>/dev/null || true

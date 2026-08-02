@@ -1,0 +1,55 @@
+# Architecture
+BR2_arm=y
+BR2_cortex_a7=y
+BR2_ARM_FPU_VFPV3=y
+BR2_TOOLCHAIN_BUILDROOT_GLIBC=y
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+# GCC 12.x 与 kernel 4.19 兼容性 (M3 N5 已验证)
+BR2_GCC_VERSION_12_X=y
+BR2_KERNEL_HEADERS_4_19=y
+
+# 极致性能优化 (-O3 + cortex-a7 硬浮点)
+BR2_OPTIMIZE_3=y
+BR2_TARGET_OPTIMIZATION="-march=armv7-a -mfpu=vfpv3 -mfloat-abi=hard -O3"
+
+# System (无 BR2_LINUX_KERNEL / 无 BR2_TARGET_UBOOT!)
+BR2_ROOTFS_DEVICE_CREATION_DYNAMIC_DEVTMPFS=y
+BR2_ROOTFS_OVERLAY="board/ebf/imx6ull-carmeter/rootfs-overlay"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="board/ebf/imx6ull-carmeter/post-image.sh"
+# D1: 镜像生成前注入 Qt6+carmeter+glibc2.43 (buildroot 外 GCC 15.2 编译产物)
+BR2_ROOTFS_POST_BUILD_SCRIPT="board/ebf/imx6ull-carmeter/post-build.sh"
+BR2_INIT_BB=y
+
+# Filesystem
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_4=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="128M"
+
+# M4-D 方案 D: Qt 6.7.3 由外部手动 cross-compile (在 /opt/qt6-carmeter/)
+# buildroot 不编 Qt6 — 只编基础 rootfs + carmeter binary (用外部 Qt6 sysroot)
+#
+# 不启用 (之前 M3 用 buildroot 内置 Qt6, 现改外部):
+# - BR2_PACKAGE_QT6BASE / Qt6DECLARATIVE / Qt6SHADERTOOLS
+# - BR2_PACKAGE_WQY_ZENHEI / FONTCONFIG / FREETYPE (Qt6 sysroot 自带)
+# - BR2_PACKAGE_PCRE2 / LIBB2 / ZLIB (Qt6 sysroot 自带)
+# - BR2_PACKAGE_EVTEST / CAN_UTILS / KBD / STRACE (M1/M3 诊断工具)
+
+# D1: carmeter 改由 buildroot 外 GCC 15.2 编译 (与 Qt6 同编译器保 ABI 一致)
+# 产物在 ~/qt6-cache/carmeter-staging/, 由 post-build.sh 注入 rootfs
+# BR2_PACKAGE_CARMETER=y  (不再由 buildroot 编, 避免内部 GCC 7.4 链接 GCC15 Qt6 的 ABI 冲突)
+
+# C++ 后端依赖: libgpiod (buzzer 控制, 见 ADR-0002)
+# C 库 ABI 稳定, buildroot GCC 12 编的 libgpiod 可被外部 GCC 15 编的 carmeter 链接
+# 装入 rootfs (运行时) + output/host sysroot (carmeter 交叉编译链接)
+BR2_PACKAGE_LIBGPIOD=y
+
+# can0 up 需要 iproute2 (busybox ip 不支持 'type can bitrate', S99carmeter up can0)
+BR2_PACKAGE_IPROUTE2=y
+
+# 镜像源 (清华)
+BR2_PRIMARY_SITE="https://mirrors.tuna.tsinghua.edu.cn/buildroot/"
+BR2_BACKUP_SITE="https://sources.buildroot.net"
+BR2_GNU_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/gnu/"
+BR2_KERNEL_MIRROR="https://mirror.tuna.tsinghua.edu.cn/kernel/"
+BR2_LUAROCKS_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/luarocks/"
+BR2_CPAN_MIRROR="https://mirrors.tuna.tsinghua.edu.cn/CPAN/"

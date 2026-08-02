@@ -1,0 +1,21 @@
+Fix host-e2fsprogs build with gcc 15 -std=c23 (default).
+
+e2fsprogs 1.45.4's lib/ext2fs/tdb.c has `typedef int bool;`.
+In C23 mode, `bool` is a keyword and redefinition is rejected.
+
+Upstream fix expected in e2fsprogs 1.47+.
+---
+--- a/lib/ext2fs/tdb.c
++++ b/lib/ext2fs/tdb.c
+@@ -105,5 +105,10 @@
+ #endif
+
+-typedef int bool;
++/* gcc 15 -std=c23 compatibility: bool is a keyword, skip typedef when stdbool.h provides it */
++#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L && defined(__bool_true_false_are_defined)
++ /* C23 + stdbool.h: _Bool already provided, no need to redefine bool */
++#else
++typedef int bool;
++#endif
+
+ #include "tdb.h"
