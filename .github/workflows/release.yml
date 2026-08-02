@@ -18,7 +18,9 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # 必须 22.04: Ubuntu 24.04 (noble) 起官方源不再发布 armhf 包,
+    # libgpiod-dev:armhf 等交叉依赖只能从 jammy 安装
+    runs-on: ubuntu-22.04
     timeout-minutes: 360
     env:
       QT6_PREFIX: /opt/qt6-carmeter
@@ -39,7 +41,6 @@ jobs:
           sudo apt-get install -y \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
             libc6-armhf-cross libc6-dev-armhf-cross \
-            libstdc++-*-dev-armhf-cross \
             ninja-build cmake pkg-config bc u-boot-tools \
             libgpiod-dev:armhf \
             libssl-dev flex bison
