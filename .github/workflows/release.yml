@@ -37,7 +37,14 @@ jobs:
         run: |
           sudo apt-get update
           sudo dpkg --add-architecture armhf
-          # armhf 二进制包托管在 ports.ubuntu.com, 默认源 (archive/security) 没有 armhf 目录
+          # 默认源 (archive/security) 没有 armhf 目录, 不限制架构的话 apt update
+          # 会对它们也拉 armhf Packages → 404. 限制默认源仅服务 amd64.
+          if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+            sudo sed -i 's/^URIs:/Architectures: amd64\nURIs:/' /etc/apt/sources.list.d/ubuntu.sources
+          else
+            sudo sed -i 's/^deb /deb [arch=amd64] /' /etc/apt/sources.list
+          fi
+          # armhf 二进制包托管在 ports.ubuntu.com
           echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy main universe multiverse restricted" | sudo tee /etc/apt/sources.list.d/armhf.list
           echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy-updates main universe multiverse restricted" | sudo tee -a /etc/apt/sources.list.d/armhf.list
           echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy-security main universe multiverse restricted" | sudo tee -a /etc/apt/sources.list.d/armhf.list
