@@ -54,7 +54,8 @@ jobs:
             libc6-armhf-cross libc6-dev-armhf-cross \
             ninja-build cmake pkg-config bc u-boot-tools \
             libgpiod-dev:armhf \
-            libssl-dev flex bison
+            libssl-dev flex bison \
+            zlib1g-dev libpcre2-dev libfreetype-dev
           arm-linux-gnueabihf-g++ -dumpversion
 
       - name: 恢复 Qt6 源码缓存
@@ -82,7 +83,24 @@ jobs:
             /opt/qt6-carmeter-host
           key: qt6-${{ hashFiles('qt6/build-qt6.sh', 'qt6/qt6-toolchain.cmake') }}-6.7.3
 
-      - name: 编译 Qt6 (首次约 2h, 缓存命中则跳过)
+      - name: 编译 host Qt (QT_HOST_PATH 必需, 供 qmake/qmlcachegen 等交叉编译工具)
+        if: steps.qt6-cache.outputs.cache-hit != 'true'
+        run: |
+          cmake -S "$QT_SRC" -B qt6-host-build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_INSTALL_PREFIX="$QT_HOST" \
+            -DQT_BUILD_EXAMPLES=OFF -DQT_BUILD_TESTS=OFF \
+            -DQT_BUILD_SUBMODULES="qtbase;qtshadertools;qtdeclarative" \
+            -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 \
+            -DINPUT_accessibility=no -DINPUT_testlib=no \
+            -DINPUT_glib=no -DINPUT_dbus=no \
+            -DINPUT_harfbuzz=no -DINPUT_fontconfig=no \
+            -DINPUT_libpng=qt -DINPUT_libjpeg=qt \
+            -DINPUT_optimize_size=yes -DINPUT_strip=yes
+          ninja -C qt6-host-build -j"$JOBS"
+          ninja -C qt6-host-build install
+
+      - name: 编译 Qt6 target (首次约 2h, 缓存命中则跳过)
         if: steps.qt6-cache.outputs.cache-hit != 'true'
         run: ./qt6/build-qt6.sh
 
