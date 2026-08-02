@@ -37,6 +37,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo dpkg --add-architecture armhf
+          # armhf 二进制包托管在 ports.ubuntu.com, 默认源 (archive/security) 没有 armhf 目录
+          echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy main universe multiverse restricted" | sudo tee /etc/apt/sources.list.d/armhf.list
+          echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy-updates main universe multiverse restricted" | sudo tee -a /etc/apt/sources.list.d/armhf.list
+          echo "deb [arch=armhf] https://ports.ubuntu.com/ubuntu-ports jammy-security main universe multiverse restricted" | sudo tee -a /etc/apt/sources.list.d/armhf.list
           sudo apt-get update
           sudo apt-get install -y \
             gcc-arm-linux-gnueabihf g++-arm-linux-gnueabihf \
