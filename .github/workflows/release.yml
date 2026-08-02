@@ -93,6 +93,8 @@ jobs:
             -DQT_BUILD_SUBMODULES="qtbase;qtshadertools;qtdeclarative" \
             -DBUILD_SHARED_LIBS=ON -DCMAKE_CXX_STANDARD=17 \
             -DINPUT_accessibility=no -DINPUT_testlib=no \
+            -DINPUT_opengl=no -DINPUT_opengles2=no -DINPUT_opengles3=no \
+            -DINPUT_egl=no -DINPUT_eglfs=no \
             -DINPUT_glib=no -DINPUT_dbus=no \
             -DINPUT_harfbuzz=no -DINPUT_fontconfig=no \
             -DINPUT_libpng=qt -DINPUT_libjpeg=qt \
