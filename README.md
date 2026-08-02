@@ -2,7 +2,7 @@
 
 基于 i.MX6ULL 嵌入式 Linux 的车载数字仪表盘（Qt 6 软件渲染）。
 
-- 硬件平台：i.MX6ULL 单核 Cortex-A7 @ 792MHz，512MB 内存（CarMeter-Pro 板）
+- 硬件平台：i.MX6ULL 单核 Cortex-A7 @ 792MHz，512MB 内存
 - 显示：4.3" LCD（800×480），LinuxFB 后端，双缓冲无撕裂
 - UI：Qt 6.7 + Qt Quick，纯 QML 绘制仪表指针/刻度/警示灯/数值条
 - 数据源：`MockDataSource` 三段状态机（点火自检 → 数据续接 → 实时数据），无 CAN 通信
@@ -81,7 +81,7 @@ release/ 产物用 NXP **mfgtools**（Windows 烧写工具）烧写到 eMMC：
 | 字体 | wqy-zenhei 复制为 .ttf（Qt6 freetype 不扫描 .ttc） |
 | 显示 | LinuxFB 双缓冲 pan（patch 见 `qt6/` 说明） |
 | 音频 | 蜂鸣器 GPIO1_IO19 提示音（GpioManager） |
-| 按键 | TTP223 触摸按键 GPIO5_IO01 切换设置页 |
+| 按键 | TTP223 触摸按键 GPIO5_IO01 切换设置页（暂未实现） |
 
 ## 已知限制
 
