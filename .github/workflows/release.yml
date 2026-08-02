@@ -69,7 +69,7 @@ jobs:
         run: |
           mkdir -p qt6-src
           curl -fsSL -o /tmp/qt.tar.xz \
-            https://download.qt.io/archive/qt/6.7/6.7.3/submodules/qt-everywhere-src-6.7.3.tar.xz
+            https://download.qt.io/archive/qt/6.7/6.7.3/single/qt-everywhere-src-6.7.3.tar.xz
           tar xJf /tmp/qt.tar.xz -C qt6-src
           rm /tmp/qt.tar.xz
 
