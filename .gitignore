@@ -2,6 +2,7 @@
 buildroot/output/
 buildroot/dl/
 build/
+.cache/
 buildroot/.config
 buildroot/.config.old
 kernel/arch/arm/boot/zImage
