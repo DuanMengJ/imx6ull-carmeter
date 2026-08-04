@@ -55,7 +55,8 @@ jobs:
             ninja-build cmake pkg-config bc u-boot-tools \
             libgpiod-dev:armhf \
             libssl-dev flex bison \
-            zlib1g-dev libpcre2-dev libfreetype-dev
+            zlib1g-dev libpcre2-dev libfreetype-dev \
+            lzop
           arm-linux-gnueabihf-g++ -dumpversion
 
       - name: 恢复 Qt6 源码缓存
