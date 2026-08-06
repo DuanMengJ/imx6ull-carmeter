@@ -13,6 +13,7 @@
 #include <QQmlContext>
 #include <QCoreApplication>
 #include <QQuickStyle>
+#include <QQuickWindow>
 #include <QLoggingCategory>
 #include <QtGlobal>
 
@@ -20,6 +21,7 @@
 #include <clocale>
 
 #include "Application.h"
+#include "core/HudMonitor.h"
 #include "core/MockDataSource.h"
 #include "core/VehicleData.h"
 #include "persist/OdoStore.h"
@@ -99,6 +101,16 @@ int main(int argc, char *argv[])
 #endif
     );
 
+    // HUD 调试层 (FPS + 进程 CPU): CARMETER_HUD 非空即开, 默认关闭。
+    // hudEnabled/hudMonitor 必须先于 loadFromModule 注入 —— Dashboard.qml 在加载期间
+    // 即实例化 HudOverlay 并求值 hudMonitor.fps 绑定, 上下文属性无变更通知,
+    // 加载后才设置会得到永久的 ReferenceError (这是本设计的关键时序约束)。
+    HudMonitor *hud = nullptr;
+    if (qEnvironmentVariableIsSet("CARMETER_HUD"))
+        hud = new HudMonitor(&engine);
+    engine.rootContext()->setContextProperty("hudEnabled", hud != nullptr);
+    engine.rootContext()->setContextProperty("hudMonitor", hud);
+
     // 加载主 QML
     QObject::connect(
         &engine,
@@ -112,6 +124,11 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty()) {
         return -1;
     }
+
+    // QQuickWindow 只有 QML 加载完成后才存在; afterFrameEnd 在 basic loop (板端)
+    // 下每渲染帧于 GUI 线程触发, 桌面 threaded loop 下自动转 queued 连接。
+    if (hud)
+        hud->setWindow(qobject_cast<QQuickWindow *>(engine.rootObjects().constFirst()));
 
     // 拿 VehicleData QML singleton (QML_SINGLETON 由 engine 创建)
     auto *vehicle = engine.singletonInstance<VehicleData *>("CarMeter", "VehicleData");

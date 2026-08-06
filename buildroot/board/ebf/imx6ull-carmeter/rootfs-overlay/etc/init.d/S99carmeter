@@ -22,4 +22,8 @@ echo "[S99carmeter] LC_ALL=$LC_ALL LANG=$LANG QT_PLUGIN_PATH=$QT_PLUGIN_PATH QML
 
 # 后台启动 carmeter (不阻塞 rcS, 让 init 跑 getty 提示登录)
 # carmeter log 重定向到 /tmp/carmeter.log (不污染串口 shell)
+#
+# 调试阶段默认启用屏幕 HUD (FPS + 进程 CPU 占用), 显示在顶部 telltale 空档。
+# 生产环境前注释掉这一行 —— HUD 是调试 overlay, 不属于产品 UI。
+export CARMETER_HUD=1
 /usr/bin/carmeter >/tmp/carmeter.log 2>&1 &

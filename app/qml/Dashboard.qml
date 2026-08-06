@@ -12,8 +12,8 @@
 // 数据来源: VehicleData QML 单例 (MockDataSource -> VehicleData, 见 ADR-0004)。
 // 原 Timer 模拟已删, 仪表状态全部由 VehicleData 驱动。
 //
-// PowerOnSelfTest (见 CONTEXT.md / ADR-0003): 启动时 2s 自检动效。
-// bootProgress 0->1 线性 2s, bootPhase 三角波 0->1->0 (顶点在 1.0s)。
+// PowerOnSelfTest (见 CONTEXT.md / ADR-0003): 启动时 3s 自检动效。
+// bootProgress 0->1 线性 3s, bootPhase 三角波 0->1->0 (顶点在 1.0s)。
 // 动效期间 bootAnimActive=true, speed/leftPower/rightPower 与 telltale 用
 // boot 派生值覆盖 VehicleData 绑定; 结束切回 VehicleData。
 
@@ -75,5 +75,18 @@ Item {
     SpeedIndicator {
         anchors.fill: parent
         speed: dashboard.bootAnimActive ? dashboard.bootSpeed : VehicleData.speed
+    }
+
+    // 5. HUD 调试层 (CARMETER_HUD 开启时显示; 关闭时 Loader 不实例化, 零开销)。
+    //    几何由 Loader 显式给定 (顶部 telltale 排空档 x=290..530, y=9..49);
+    //    注意 Qt Loader 尺寸规则: 显式尺寸会把 loaded item resize 到 Loader
+    //    大小, 故 HudOverlay 内部必须锚定 (anchors.fill) 而非自带坐标。
+    //    z 显式置顶, 不依赖声明顺序; active 由上下文属性一次性求值, 运行时不可切换。
+    Loader {
+        x: 290; y: 9
+        width: 240; height: 40
+        z: 100
+        active: hudEnabled
+        sourceComponent: HudOverlay { }
     }
 }

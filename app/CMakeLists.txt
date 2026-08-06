@@ -24,6 +24,8 @@ qt_add_executable(carmeter
     src/core/BuzzerController.cpp
     src/core/MockDataSource.h
     src/core/MockDataSource.cpp
+    src/core/HudMonitor.h
+    src/core/HudMonitor.cpp
     src/io/GpioManager.h
     src/io/GpioManager.cpp
     src/persist/OdoStore.h
@@ -63,6 +65,7 @@ qt_add_qml_module(carmeter
     QML_FILES
         qml/Main.qml
         qml/Dashboard.qml
+        qml/HudOverlay.qml
         qml/SpeedIndicator.qml
         qml/WarningLights.qml
         qml/ValueBars.qml
