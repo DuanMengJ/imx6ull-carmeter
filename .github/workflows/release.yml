@@ -116,8 +116,9 @@ jobs:
 
       - name: 编译 uboot
         run: |
-          # U-Boot 要求 defconfig 和 make 同一次调用 (defconfig 生成 config.mk, 第二次 make 才能引用)
-          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig -j4
+          # U-Boot 要求 defconfig 和 make 同一次调用 (defconfig 生成 config.mk)
+          # 必须显式给 all 目标, 否则只跑完 defconfig 不 build
+          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig all -j4
 
       - name: 收集产物
         run: |
