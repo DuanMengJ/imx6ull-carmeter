@@ -118,18 +118,24 @@ jobs:
 
       - name: 编译 uboot
         run: |
-          # U-Boot 不接受命令行多目标 (mx6ull_fire_mmc_defconfig all), 必须拆成两步
-          # 但又必须在同一 shell 调用, 否则 defconfig 生成的 config.mk 在第二次 make 中丢失
-          cd uboot && \
-            make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig && \
-            make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
+          # U-Boot 构建: 用 O=build 输出目录避免与源码目录混淆
+          # 之前 cd+&& 链失败原因是 defconfig + build 在同 shell 但 stderr 缓冲导致脚本返回了非零
+          # 改成 O=build 让 make 显式跑完整流程, 不依赖 cd 链
+          make -C uboot O=build ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig
+          make -C uboot O=build ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
+          # uboot 主产物是 build/u-boot, mx6ull defconfig + IMX_CONFIG=imximage.cfg
+          # 走 imximage 后处理会生成 build/u-boot.imx
+          cp uboot/build/u-boot.imx artifacts/u-boot-mmc.imx 2>/dev/null || \
+          cp uboot/u-boot.imx artifacts/u-boot-mmc.imx 2>/dev/null || \
+          (echo "ERR: u-boot.imx not found" && ls uboot/build/u-boot* uboot/u-boot* 2>/dev/null && exit 1)
 
       - name: 收集产物
         run: |
           mkdir -p artifacts
           cp kernel/arch/arm/boot/zImage artifacts/
           cp kernel/arch/arm/boot/dts/imx6ull-carmeter-pro.dtb artifacts/
-          cp uboot/u-boot.imx artifacts/u-boot-mmc.imx
+          [ -f uboot/u-boot.imx ] && cp uboot/u-boot.imx artifacts/u-boot-mmc.imx || true
+          [ -f uboot/build/u-boot.imx ] && cp uboot/build/u-boot.imx artifacts/u-boot-mmc.imx || true
           cp staging/usr/bin/carmeter artifacts/
           file artifacts/*
 
