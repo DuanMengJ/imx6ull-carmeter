@@ -21,7 +21,9 @@ jobs:
     # 必须 22.04: Ubuntu 24.04 (noble) 起官方源不再发布 armhf 包,
     # libgpiod-dev:armhf 等交叉依赖只能从 jammy 安装
     runs-on: ubuntu-22.04
-    timeout-minutes: 360
+    # 8h 给全量首跑: Qt6 host (1h) + Qt6 target (2h) + carmeter + kernel + uboot + 收尾
+    # 缓存命中后只需 15-20 分钟
+    timeout-minutes: 480
     env:
       QT6_PREFIX: /opt/qt6-carmeter
       QT_HOST: /opt/qt6-carmeter-host
