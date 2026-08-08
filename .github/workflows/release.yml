@@ -118,24 +118,21 @@ jobs:
 
       - name: 编译 uboot
         run: |
-          # U-Boot 构建: 用 O=build 输出目录避免与源码目录混淆
-          # 之前 cd+&& 链失败原因是 defconfig + build 在同 shell 但 stderr 缓冲导致脚本返回了非零
-          # 改成 O=build 让 make 显式跑完整流程, 不依赖 cd 链
-          make -C uboot O=build ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig
-          make -C uboot O=build ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
-          # uboot 主产物是 build/u-boot, mx6ull defconfig + IMX_CONFIG=imximage.cfg
-          # 走 imximage 后处理会生成 build/u-boot.imx
-          cp uboot/build/u-boot.imx artifacts/u-boot-mmc.imx 2>/dev/null || \
-          cp uboot/u-boot.imx artifacts/u-boot-mmc.imx 2>/dev/null || \
-          (echo "ERR: u-boot.imx not found" && ls uboot/build/u-boot* uboot/u-boot* 2>/dev/null && exit 1)
+          # U-Boot 2019 bug: make defconfig 只写 .config, 不触发 --syncconfig 生成 auto.conf
+          # 第二次 make 调 sub-make 找不到 include/config/auto.conf → No rule for config.mk
+          # 解决: 在源码目录跑 (不用 O=build), defconfig + syncconfig + build 三步单行 make 完成
+          cd uboot && \
+            make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig oldconfig && \
+            make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
 
       - name: 收集产物
         run: |
           mkdir -p artifacts
           cp kernel/arch/arm/boot/zImage artifacts/
           cp kernel/arch/arm/boot/dts/imx6ull-carmeter-pro.dtb artifacts/
-          [ -f uboot/u-boot.imx ] && cp uboot/u-boot.imx artifacts/u-boot-mmc.imx || true
-          [ -f uboot/build/u-boot.imx ] && cp uboot/build/u-boot.imx artifacts/u-boot-mmc.imx || true
+          # uboot imx 后处理后产物可能在根目录或 build/ 下
+          [ -f uboot/u-boot.imx ] && cp uboot/u-boot.imx artifacts/u-boot-mmc.imx
+          [ -f uboot/u-boot ] && cp uboot/u-boot artifacts/u-boot.bin
           cp staging/usr/bin/carmeter artifacts/
           file artifacts/*
 
