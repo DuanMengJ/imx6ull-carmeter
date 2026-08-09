@@ -118,11 +118,15 @@ jobs:
 
       - name: 编译 uboot
         run: |
-          # U-Boot 2019 顶层 Makefile 的 syncconfig 路径要 include config.mk,
-          # 但 config.mk 由 build 阶段生成. 在源码目录跑 defconfig + all 同一次 make:
-          # 第一步 defconfig 写 .config, syncconfig 末尾触发 Makefile.autoconf 全部跑,
-          # 隐式生成 include/config/auto.conf 等中间文件, 然后 build 阶段顺利执行
-          cd uboot && make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig all -j4
+          # U-Boot: 两步独立 make (defconfig + build) - 与本地 Makefile `make uboot` 完全一致
+          # 关键: 不要 && 链、不要 O=build、不要在 defconfig 后跑 syncconfig/syncconfig-related 子目标
+          # 用 defconfig 的目标名直接 build, 失败时让上层 set -e 自然终止
+          set +e
+          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- mx6ull_fire_mmc_defconfig
+          DEF=$?
+          make -C uboot ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j4
+          BUILD=$?
+          [ $DEF -eq 0 ] && [ $BUILD -eq 0 ] || { echo "ERR: uboot defconfig=$DEF build=$BUILD"; exit 1; }
 
       - name: 收集产物
         run: |
