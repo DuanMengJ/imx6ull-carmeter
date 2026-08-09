@@ -70,6 +70,16 @@ define GLIBC_ADD_MISSING_STUB_H
 endef
 endif
 
+# glibc 2.28 + GCC 15 + WSL 环境下 tst-printf-bz18872 (10K-arg printf) 的 .c
+# 生成脚本极慢, 单核 30+ 分钟. 上游 GCC bug 67396, GCC 15 回归更慢.
+# 这是 glibc 单元测试, 不影响 libc.so 功能. 删除 stdio-common/Makefile
+# 所有 tst-printf-bz18872 引用即可绕过 (176 -> 170 行).
+# 参考: https://gcc.gnu.org/bugzilla/show_bug.cgi?id=67396
+define GLIBC_DISABLE_BZ18872_HOOK
+	$(SED) '/tst-printf-bz18872/d' $(@D)/stdio-common/Makefile
+endef
+GLIBC_POST_PATCH_HOOKS += GLIBC_DISABLE_BZ18872_HOOK
+
 GLIBC_CONF_ENV = \
 	ac_cv_path_BASH_SHELL=/bin/bash \
 	libc_cv_forced_unwind=yes \
